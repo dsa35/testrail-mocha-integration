@@ -20,7 +20,10 @@ function getResultBody(test, caseId) {
   }
   return {
     case_id: caseId,
-    status_id: test.state === "passed" ? 1 : 5,
+    // status id
+    // pass automation = 10
+    // failt automation = 11
+    status_id: test.state === "passed" ? 10 : 11,
     comment,
     elapsed: test.duration,
     version: getenv("TESTRAIL_RESULT_VERSION", "n/a")

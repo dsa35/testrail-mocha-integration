@@ -61,6 +61,10 @@ function checkOpts(opts) {
       opts.planId !== undefined
         ? opts.planId
         : getenv("TESTRAIL_PLAN_ID", "n/a"),
+    configId:
+      opts.configId !== undefined
+        ? opts.configId
+        : getenv("TESTRAIL_CONFIG_ID", "n/a"),
     runName:
       opts.runName !== undefined
         ? opts.runName
@@ -95,6 +99,7 @@ class TestrailClass {
     this.milestoneId = opts.milestoneId;
     this.planId = opts.planId;
     this.createRun = opts.createRun;
+    this.configId = opts.configId;
     this.runId = opts.runId;
     this.suiteId = opts.suiteId;
     this.runName = opts.runName;
@@ -116,6 +121,7 @@ class TestrailClass {
     }
     if (this.planId !== "n/a") {
       this.validateSingleOpt(options, "planId");
+      this.validateSingleOpt(options, "configId");
     } else if (this.runId !== "n/a") {
       this.validateSingleOpt(options, "runId");
       this.validateSingleOpt(options, "suiteId");
@@ -191,9 +197,11 @@ class TestrailClass {
         "YYYY MMM DD, HH:MM:SS"
       )}`
     );
+
     let createBody = {
       name: `${this.runName} | ${moment().format("YYYY MMM DD, HH:MM:SS")}`,
       suite_id: this.suiteId,
+      // to review if it makes sense to keep include all = true
       include_all: true
     };
     if (this.milestoneId !== "n/a" && this.milestoneId !== 0) {
@@ -207,12 +215,52 @@ class TestrailClass {
         this.projectId,
         createBody
       );
+      //logger(addRunResponse.body);
       logger(`Created run with ID ${addRunResponse.body.id}`);
       return addRunResponse.body.id;
     } catch (error) {
       logger("Error when creating a test Run");
       logger(error);
       return 0;
+    }
+  }
+
+  async createPlanRun(results) {
+    logger("createPlanRun...");
+
+    let cases = [];
+
+    results.forEach((obj) => cases.push(obj.case_id));
+    logger(cases);
+
+    let body = {
+      suite_id: this.suiteId,
+      name: this.runName,
+      include_all: true,
+      config_ids: [this.configId],
+      runs: [
+        {
+          include_all: false,
+          case_ids: cases,
+          config_ids: [this.configId]
+        }
+      ]
+    };
+
+    //logger(body);
+
+    try {
+      const addRunResponse = await this.testrail.addPlanEntry(this.planId, body);
+
+      logger(addRunResponse.body);
+      logger(`Created run with ID ${addRunResponse.body.runs[0].id}`);
+      
+      return addRunResponse.body.runs[0].id;
+    } catch (error) {
+        logger("Error when creating a test Run");
+        logger(error);
+
+        return 0;
     }
   }
 
@@ -246,7 +294,9 @@ class TestrailClass {
   async sendResults(results, failures, exit) {
     let runId = 0;
     if (this.planId !== "n/a") {
-      runId = await this.getRunIdTestCase(results[0].case_id);
+      logger("planId: " + this.planId);
+      //runId = await this.getRunIdTestCase(results[0].case_id);
+      runId = await this.createPlanRun(results)
     } else {
       if (this.runId !== "n/a") {
         runId = this.runId;
@@ -259,9 +309,10 @@ class TestrailClass {
       exit && exit(failures > 0 ? 1 : 0);
     } else {
       await this.addResults(runId, results);
-      if (this.createRun === true || this.createRun === "true") {
-        await this.closeRun(runId);
-      }
+      // do not close the plan
+      //if (this.createRun === true || this.createRun === "true") {
+      //  await this.closeRun(runId);
+      //}
       exit && exit(failures > 0 ? 1 : 0);
     }
   }
