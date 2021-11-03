@@ -1,22 +1,10 @@
-![GitHub package.json version](https://img.shields.io/github/package-json/v/hermape7/testrail-mocha-reporter?color=blue)
-[![npm version](https://badge.fury.io/js/testrail-mocha-reporter.svg)](https://www.npmjs.com/package/testrail-mocha-reporter)
-[![NPM Downloads](https://img.shields.io/npm/dt/testrail-mocha-reporter.svg?style=flat)]()
+# testrail-mocha-integration
 
-![GitHub issues](https://img.shields.io/github/issues-raw/hermape7/testrail-mocha-reporter)
-
-# testrail-mocha-reporter
-
-This is custom mocha reporter for use with javascript framework, [mocha](https://mochajs.org/).
+Another custom mocha reporter for use with javascript framework, [mocha](https://mochajs.org/).
 
 Inspired by [mochawesome](https://github.com/adamgruber/mochawesome) project.
 
 ## Installation
-
-### npm
-
-```Bash
-npm install --save-dev testrail-mocha-reporter
-```
 
 ### yarn
 
@@ -111,28 +99,6 @@ If you are using a `multi-custom-reporter` then you will need to add it like thi
 }
 
 ```
-
-## TestRail Settings
-
-To increase security, the TestRail team suggests using an API key instead of a password. You can see how to generate an API key [here](http://docs.gurock.com/testrail-api2/accessing#username_and_api_key).
-
-If you maintain your own TestRail instance on your own server, it is recommended to [enable HTTPS for your TestRail installation](http://docs.gurock.com/testrail-admin/admin-securing#using_https).
-
-For TestRail hosted accounts maintained by [Gurock](http://www.gurock.com/), all accounts will automatically use HTTPS.
-
-You can read the whole TestRail documentation [here](http://docs.gurock.com/).
-
-## Author
-
-Petr Heřmanský - [github](https://github.com/hermape7)
-
-## License
-
-This project is licensed under the [MIT license](/LICENSE.md).
-
-## Acknowledgments
-
-* to [mochawesome](https://github.com/adamgruber/mochawesome) project which inspired me.
 
 ## References
 

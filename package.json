@@ -1,16 +1,16 @@
 {
-  "name": "testrail-mocha-reporter",
-  "version": "0.5.4",
-  "description": "Testrail reporter for Mocha.js",
+  "name": "testrail-mocha-integration",
+  "version": "0.6.0",
+  "description": "Custom testrail reporter for Mocha.js",
   "scripts": {
     "lint": "eslint src test",
     "test": "mocha"
   },
-  "author": "Petr Hermansky",
+  "author": "dsa35",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/hermape7/testrail-mocha-reporter"
+    "url": "https://github.com/dsa35/testrail-mocha-reporter"
   },
   "keywords": [
     "mocha",
