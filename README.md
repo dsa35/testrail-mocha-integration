@@ -2,66 +2,55 @@
 
 Another custom mocha reporter for use with javascript framework, [mocha](https://mochajs.org/).
 
-Inspired by [mochawesome](https://github.com/adamgruber/mochawesome) project.
+Forked from https://github.com/hermape7/testrail-mocha-reporter
 
 ## Installation
 
-### yarn
+### npm
 
 ```Bash
-yarn add -D testrail-mocha-reporter
+npm install @dsa35/testrail-mocha-integration
 ```
 
-## Usage
+### via package.json
+
+```Bash
+&quot;@dsa35/testrail-mocha-integration&quot;: &quot;0.6.1&quot;
+```
+
+## Usage example
 
 ### Mocha
 
 ```bash
-mocha test --reporter testrail-mocha-reporter --reporter-options domain=domain.testrail.com,username=test@test.com,password=12345678,...
+mocha test --reporter testrail-mocha-integration --reporter-options domain=testrail.domain.com,username=email@domain.com,password=<api_key>,projectId=89,planId=84832,suiteId=8498,runName=Automated,configId=685
 ```
-
-### Possible options
-
-You can choose between three options.
-
-1. send **planId** - then it will fetch all the suites and cases associated with that plan
-
-2. send **runId** - then the results are send to that run with defined ID and the run is not closed
-   1. suiteId required
-
-3. send **createRun** - then it will create a new run with defined suite (suiteId) and close it after end of the suite.
-   1. runName required
-   2. suiteId required
+where:
 
 **domain**: *string* domain name of your Testrail instance (e.g. for a hosted instance instance.testrail.net)
 
 **username**: *string* user under which the test run will be created (e.g. jenkins or ci)
 
-**password**: *string* password or API token for user
+**password**: *string* use API key generated under user settings in Testrail
 
-**projectId**: *number* project number with which the tests are associated
+**projectId**: *number* project id in use for the your in Testrail
 
-**milestoneId**: *number* (*optional*) milestone number with which the tests are associated
+**planId**: *number* planId should be previously created and will be used to store every new run/tests
 
-**planId**: *number* (*optional*) planId - if the planId is set then the results are posted to this run. Ii will fetch all the runId's and cases within that plan.
+**suiteId**: *number* test suite number where the tests are located
 
-**runId**: *number* (*optional*) runId number which tests are associated.
+**runName**: *string* run name that will be created inside the test plan
 
-**createRun**: *boolean* (*required*) if runId is NOT set. It will creates a new run with defined runName.
+**configId**: *number* config number that will be used to identify device/source executing tests (e.g.: Roku 4200x), should be retrieved from Testrail configs
 
-**suiteId**: *number* (*required*) with the set runId or createRun. Suite number with which the tests are associated
-
-**runName**: *string* (*required*) with the createRun set to true.
-
-**ci**: *string* (*optional*) add to run (createNew must be true) ci build number. Possible options are (`"circle" | "travis | jenkins`)
 
 ### Cypress integration
 
-Reporter working well with [Cypress.io](https://www.cypress.io/).
+Reporter also working with [Cypress.io](https://www.cypress.io/).
 
-To integrate reporter please read the Cypress [documentation](https://docs.cypress.io/guides/tooling/reporters.html) for adding custom reporters.
+To integrate reporter please read Cypress [documentation](https://docs.cypress.io/guides/tooling/reporters.html) on how to add custom reporters.
 
-### Add reporter to jsou cypress.json
+### Add reporter to json cypress.json
 
 ```json
 {
@@ -70,10 +59,10 @@ To integrate reporter please read the Cypress [documentation](https://docs.cypre
   "reporterOptions": {
     "domain": "domain.testrail.com",
     "username": "test@test.com",
-    "password": "your password",
+    "password": "<api_key>",
     "projectId": 1,  
     "planId": 1,
-    "milestoneId": 1
+    ...
   },
   ...
 }
@@ -89,15 +78,38 @@ If you are using a `multi-custom-reporter` then you will need to add it like thi
     "testrailMochaReporterReporterOptions": {
       "domain": "domain.testrail.com",
       "username": "test@test.com",
-      "password": "your password",
+      "password": "<api_key>",
       "projectId": 1,  
       "planId": 1,
-      "milestoneId": 1
+      ...
     }
   },
   ...
 }
 
+```
+
+### Mapping Testrail cases with scenarios in the code
+
+Include test case id from Testrail inside `it` with the following format: `TR-123456`, reporter will get the id `123456` from Testrail and create an execution for the given test case inside the test plan/run id with status `Pass automation` or `Fail automation` accordingly.
+
+```
+describe('Authentication Feature', () => {
+    it('TR-123456 - Authentication with empty email', async function () {
+        await authentication.loginWithEmptyEmail();
+        await authentication.validateEmptyEmailError();
+    });
+
+});
+```
+
+```
+describe('TC4.4.3 - Search - Results begin to populate as the user is typing the search criteria', () => {
+    it('TR-123456 - should display a grid of contents on Results and Clips tab', () => {
+        cy.moveToSearchFilter();
+        ...
+    });
+});
 ```
 
 ## References

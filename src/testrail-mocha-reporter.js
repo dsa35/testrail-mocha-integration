@@ -1,6 +1,6 @@
 const TestrailClass = require("./testrail");
 const Mocha = require("mocha");
-const { EVENT_RUN_END, EVENT_TEST_FAIL, EVENT_TEST_PASS } =
+const { EVENT_RUN_END, EVENT_TEST_FAIL, EVENT_TEST_PASS, EVENT_TEST_PENDING } =
   Mocha.Runner.constants;
 const { titleToCaseIds, logger } = require("./utils");
 const getenv = require("getenv");
@@ -22,12 +22,32 @@ function getResultBody(test, caseId) {
     case_id: caseId,
     // status id
     // pass automation = 10
-    // failt automation = 11
-    status_id: test.state === "passed" ? 10 : 11,
+    // fail automation = 11
+    // untested = 3
+    // retest = 4
+    //status_id: test.state === "passed" ? 10 : 11,
+    status_id: getStateResult(test.state),
     comment,
     elapsed: test.duration,
     version: getenv("TESTRAIL_RESULT_VERSION", "n/a")
   };
+}
+
+function getStateResult(state) {
+  let result = 3; // untested state
+  
+  switch (state) {
+  case 'passed':
+    result = 10; // pass automation state
+    break;
+  case 'failed':
+    result = 11; // fail automation state
+    break;
+  default:
+    result = 4; // retest state
+  }
+
+  return result;
 }
 
 function consoleReporter(reporter) {
@@ -101,7 +121,7 @@ function testrailReporter(runner, options) {
       this.results.push(...results);
     } else {
       logger(
-        `No test case found. Please check naming of the test - must include (C|T)xxxx`
+        `No test case found. In order to be published to Testrail please check naming - must include TR-xxxx`
       );
     }
   });
@@ -115,7 +135,21 @@ function testrailReporter(runner, options) {
       this.results.push(...results);
     } else {
       logger(
-        `No test case found. Please check naming of the test - must include (C|T)xxxx`
+        `No test case found. In order to be published to Testrail please check naming - must include TR-xxxx`
+      );
+    }
+  });
+
+  runner.on(EVENT_TEST_PENDING, test => {
+    const caseIds = titleToCaseIds(test.title);
+    if (caseIds.length > 0) {
+      const results = caseIds.map(caseId => {
+        return getResultBody(test, caseId);
+      });
+      this.results.push(...results);
+    } else {
+      logger(
+        `No test case found. In order to be published to Testrail please check naming - must include TR-xxxx`
       );
     }
   });

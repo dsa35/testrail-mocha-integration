@@ -215,7 +215,6 @@ class TestrailClass {
         this.projectId,
         createBody
       );
-      //logger(addRunResponse.body);
       logger(`Created run with ID ${addRunResponse.body.id}`);
       return addRunResponse.body.id;
     } catch (error) {
@@ -226,12 +225,9 @@ class TestrailClass {
   }
 
   async createPlanRun(results) {
-    logger("createPlanRun...");
-
     let cases = [];
 
     results.forEach((obj) => cases.push(obj.case_id));
-    logger(cases);
 
     let body = {
       suite_id: this.suiteId,
@@ -252,7 +248,6 @@ class TestrailClass {
     try {
       const addRunResponse = await this.testrail.addPlanEntry(this.planId, body);
 
-      logger(addRunResponse.body);
       logger(`Created run with ID ${addRunResponse.body.runs[0].id}`);
       
       return addRunResponse.body.runs[0].id;
@@ -273,8 +268,24 @@ class TestrailClass {
     }
   }
 
+  filterResults(results) {
+    // filter case_ids with more than one occurrence and containing results != passed, then changes those cases to a common result (untested or failed)
+    results.forEach((x) => {
+        let filteredResults = results.filter(e => e.case_id === x.case_id);
+
+        if ((filteredResults.length > 1) && (filteredResults.filter(e => e.status_id === 4).length > 0))
+            x.status_id = 4;
+        else if ((filteredResults.length > 1) && (filteredResults.filter(e => e.status_id === 11).length > 0))
+            x.status_id = 11;
+
+    });
+
+    return results;
+  };
+
   async addResults(runId, results) {
     try {
+      results = this.filterResults(results);
       logger(`Adding results to run with id ${runId}`);
       await this.testrail.addResultsForCases(runId, results ? results : {});
       logger(
@@ -294,7 +305,7 @@ class TestrailClass {
   async sendResults(results, failures, exit) {
     let runId = 0;
     if (this.planId !== "n/a") {
-      logger("planId: " + this.planId);
+      logger("Plan ID: " + this.planId);
       //runId = await this.getRunIdTestCase(results[0].case_id);
       runId = await this.createPlanRun(results)
     } else {

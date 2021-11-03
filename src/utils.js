@@ -6,7 +6,7 @@ const LOG_LEVELS = ["info", "warning", "debug", "error"];
 function titleToCaseIds(title) {
   let caseIds = [];
 
-  let testCaseIdRegExp = /\bT?C(\d+)\b/g;
+  let testCaseIdRegExp = /\bTR-(\d+)\b/g;
   let m;
   while ((m = testCaseIdRegExp.exec(title)) !== null) {
     let caseId = parseInt(m[1]);
