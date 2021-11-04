@@ -1,6 +1,6 @@
 {
-  "name": "@dsa35/testrail-mocha-integration",
-  "version": "0.6.1",
+  "name": "testrail-mocha-integration",
+  "version": "0.6.3",
   "description": "Custom testrail reporter for Mocha.js",
   "scripts": {
     "lint": "eslint src test",
@@ -38,6 +38,6 @@
     "moment": "2.29.1"
   },
   "publishConfig": {
-    "registry": "https://npm.pkg.github.com/dsa35"
+    "registry": "https://registry.npmjs.org/"
   }
 }

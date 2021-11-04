@@ -57,6 +57,8 @@ function checkOpts(opts) {
         : getenv("TESTRAIL_SUITE_ID", "n/a"),
     runId:
       opts.runId !== undefined ? opts.runId : getenv("TESTRAIL_RUN_ID", "n/a"),
+    entryId:
+      opts.entryId !== undefined ? opts.entryId : getenv("TESTRAIL_ENTRY_ID", "n/a"),
     planId:
       opts.planId !== undefined
         ? opts.planId
@@ -101,6 +103,7 @@ class TestrailClass {
     this.createRun = opts.createRun;
     this.configId = opts.configId;
     this.runId = opts.runId;
+    this.entryId = opts.entryId;
     this.suiteId = opts.suiteId;
     this.runName = opts.runName;
     this.suiteIds = opts.suiteIds;
@@ -124,6 +127,7 @@ class TestrailClass {
       this.validateSingleOpt(options, "configId");
     } else if (this.runId !== "n/a") {
       this.validateSingleOpt(options, "runId");
+      this.validateOptions(options, "entryId");
       this.validateSingleOpt(options, "suiteId");
     } else if (this.createRun !== "n/a") {
       this.validateSingleOpt(options, "createRun");
@@ -224,6 +228,32 @@ class TestrailClass {
     }
   }
 
+  async updateCases(planId, runId, entryId, results) {
+    try {
+      const tests = await this.testrail.getTests(runId);
+      let cases = [];
+
+      // populate array with existing test cases in the run
+      tests.body.forEach((obj) => cases.push(obj.case_id));
+
+      // add tests from current execution to array
+      results.forEach((obj) => cases.push(obj.case_id));
+
+      let body = {
+        include_all: true,
+        case_ids: cases
+      }
+
+      // update test run entry with existing tests + tests from current execution
+      await this.testrail.updatePlanEntry(planId, entryId, body);
+
+    } catch (error) {
+        logger("Error updating tests");
+        logger(error);
+    }
+
+  }
+
   async createPlanRun(results) {
     let cases = [];
 
@@ -287,6 +317,7 @@ class TestrailClass {
     try {
       results = this.filterResults(results);
       logger(`Adding results to run with id ${runId}`);
+      logger(results);
       await this.testrail.addResultsForCases(runId, results ? results : {});
       logger(
         `Results published to https://${this.domain}/index.php?/runs/view/${runId}`
@@ -303,14 +334,18 @@ class TestrailClass {
   }
 
   async sendResults(results, failures, exit) {
-    let runId = 0;
-    if (this.planId !== "n/a") {
+    let runId;
+    logger("runId: " + this.runId);
+    if ((this.planId !== "n/a") && (this.runId === "n/a")) {
+      runId = 0;
       logger("Plan ID: " + this.planId);
       //runId = await this.getRunIdTestCase(results[0].case_id);
       runId = await this.createPlanRun(results)
     } else {
       if (this.runId !== "n/a") {
         runId = this.runId;
+        let entryId = this.entryId;
+        await this.updateCases(this.planId, runId, entryId, results);
       } else {
         runId = await this.createNewRun();
       }
