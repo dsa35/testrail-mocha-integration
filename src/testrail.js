@@ -239,13 +239,15 @@ class TestrailClass {
       // add tests from current execution to array
       results.forEach((obj) => cases.push(obj.case_id));
 
-      let body = {
-        include_all: true,
+      const body = {
+        include_all: false,
         case_ids: cases
       }
 
       // update test run entry with existing tests + tests from current execution
-      await this.testrail.updatePlanEntry(planId, entryId, body);
+      const result = await this.testrail.updatePlanEntry(planId, entryId, body);
+      logger(body);
+      logger(result);
 
     } catch (error) {
         logger("Error updating tests");
@@ -254,12 +256,17 @@ class TestrailClass {
 
   }
 
-  async createPlanRun(results) {
+  getCasesFromResults(results) {
     let cases = [];
-
     results.forEach((obj) => cases.push(obj.case_id));
+    
+    return cases
+  }
 
-    let body = {
+  async createPlanRun(results) {
+    const cases = getCasesFromResults(results);
+
+    const body = {
       suite_id: this.suiteId,
       name: this.runName,
       include_all: true,
@@ -272,8 +279,6 @@ class TestrailClass {
         }
       ]
     };
-
-    //logger(body);
 
     try {
       const addRunResponse = await this.testrail.addPlanEntry(this.planId, body);
@@ -299,9 +304,9 @@ class TestrailClass {
   }
 
   filterResults(results) {
-    // filter case_ids with more than one occurrence and containing results != passed, then changes those cases to a common result (untested or failed)
+    // filter case_ids with more than one occurrence and containing results != passed, then change those cases to a common result following the order untestest/failed/passed
     results.forEach((x) => {
-        let filteredResults = results.filter(e => e.case_id === x.case_id);
+        const filteredResults = results.filter(e => e.case_id === x.case_id);
 
         if ((filteredResults.length > 1) && (filteredResults.filter(e => e.status_id === 4).length > 0))
             x.status_id = 4;
@@ -317,7 +322,6 @@ class TestrailClass {
     try {
       results = this.filterResults(results);
       logger(`Adding results to run with id ${runId}`);
-      logger(results);
       await this.testrail.addResultsForCases(runId, results ? results : {});
       logger(
         `Results published to https://${this.domain}/index.php?/runs/view/${runId}`
@@ -334,31 +338,26 @@ class TestrailClass {
   }
 
   async sendResults(results, failures, exit) {
-    let runId;
-    logger("runId: " + this.runId);
+    let runId = 0;
+    logger("Plan ID: " + this.planId);
+    logger("Run ID: " + this.runId);
     if ((this.planId !== "n/a") && (this.runId === "n/a")) {
-      runId = 0;
-      logger("Plan ID: " + this.planId);
-      //runId = await this.getRunIdTestCase(results[0].case_id);
       runId = await this.createPlanRun(results)
-    } else {
-      if (this.runId !== "n/a") {
-        runId = this.runId;
-        let entryId = this.entryId;
-        await this.updateCases(this.planId, runId, entryId, results);
-      } else {
-        runId = await this.createNewRun();
-      }
     }
+    else if (this.runId !== "n/a") {
+      runId = this.runId;
+      await this.updateCases(this.planId, runId, this.entryId, results);
+    }
+    else {
+      runId = await this.createNewRun();
+    }
+
     if (runId === "0" || runId === 0 || runId === "n/a") {
-      logger("RunId cannot be 0");
+      logger("Invalid RunID");
       exit && exit(failures > 0 ? 1 : 0);
-    } else {
+    }
+    else {
       await this.addResults(runId, results);
-      // do not close the plan
-      //if (this.createRun === true || this.createRun === "true") {
-      //  await this.closeRun(runId);
-      //}
       exit && exit(failures > 0 ? 1 : 0);
     }
   }
