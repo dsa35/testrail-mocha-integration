@@ -245,9 +245,7 @@ class TestrailClass {
       }
 
       // update test run entry with existing tests + tests from current execution
-      const result = await this.testrail.updatePlanEntry(planId, entryId, body);
-      logger(body);
-      logger(result);
+      await this.testrail.updatePlanEntry(planId, entryId, body);
 
     } catch (error) {
         logger("Error updating tests");
