@@ -254,15 +254,9 @@ class TestrailClass {
 
   }
 
-  getCasesFromResults(results) {
+  async createPlanRun(results) {
     let cases = [];
     results.forEach((obj) => cases.push(obj.case_id));
-    
-    return cases
-  }
-
-  async createPlanRun(results) {
-    const cases = getCasesFromResults(results);
 
     const body = {
       suite_id: this.suiteId,
