@@ -1,6 +1,6 @@
 {
   "name": "testrail-mocha-integration",
-  "version": "0.6.3",
+  "version": "0.6.4",
   "description": "Custom testrail reporter for Mocha.js",
   "scripts": {
     "lint": "eslint src test",
