@@ -8,7 +8,8 @@ const getenv = require("getenv");
 require("dotenv").config();
 
 function getResultBody(test, caseId) {
-  let comment = `Duration: ${test.duration}ms`;
+  const duration = test.duration === undefined ? 'n/a' : `${test.duration} ms` ;
+  let comment = `State: ${test.state} | Duration: ${duration}`;
   if (getenv.bool("CIRCLECI", false)) {
     comment = `
       ${comment}

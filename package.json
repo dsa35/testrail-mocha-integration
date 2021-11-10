@@ -1,6 +1,6 @@
 {
   "name": "testrail-mocha-integration",
-  "version": "0.6.4",
+  "version": "0.6.5",
   "description": "Custom testrail reporter for Mocha.js",
   "scripts": {
     "lint": "eslint src test",
@@ -10,7 +10,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/dsa35/testrail-mocha-reporter"
+    "url": "https://github.com/dsa35/testrail-mocha-integration"
   },
   "keywords": [
     "mocha",
