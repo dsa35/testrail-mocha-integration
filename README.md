@@ -15,7 +15,7 @@ npm install @dsa35/testrail-mocha-integration
 ### via package.json
 
 ```Bash
-"@dsa35/testrail-mocha-integration": "0.6.1"
+"@dsa35/testrail-mocha-integration": "0.6.5"
 ```
 
 ## Usage example
